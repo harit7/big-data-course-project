@@ -1,6 +1,7 @@
 import random
 import shutil
 import os
+from collections import defaultdict
 
 def read_edge_list(data_dir):
     edges = []
@@ -76,6 +77,34 @@ def read_e2id(data_path):
         lst_vertices.append(e)
     e2id_f.close()
     return dict_e2id, lst_vertices
+
+def write_vertex_alloc_for_parts(i,lst_parts,part_dir):
+    num_parts = len(lst_parts)
+    f = open(part_dir+'/vertex_alloc.txt','w')
+    for v in lst_parts[i].vertices:
+        s = ""
+        for j in range(num_parts):
+            if(i!=j):
+                if( v in lst_parts[j].vertices):
+                    s += str(j) + "\t"
+        if(len(s)>0):
+            s = str(v)+'\t' + s
+            f.write(s.rstrip('\t')+'\n')
+    f.flush()
+    f.close()
+    
+def read_vertex_alloc_for_parts(part_dir):
+    f = open(part_dir+'/vertex_alloc.txt','r')
+    d = defaultdict(list)
+    for l in f:
+        l = l.rstrip('\n').split('\t')
+        #d[int(l[0])] = [ int(p) for p in l[1:]]
+        v = int(l[0])
+        for p in l[1:]:
+            d[int(p)].append(v)
+        
+    f.close()
+    return d
 
 def clean_mkdir(d):
     if os.path.exists(d):

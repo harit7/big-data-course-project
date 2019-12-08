@@ -36,6 +36,8 @@ def run(rank, size,data_path):
     
     tsr_V = torch.zeros(len(lst_vertices))
     
+    dict_vertex_alloc = utils.read_vertex_alloc_for_parts(data_path)
+    
     for i in range(len(lst_vertices)):
         tsr_V[i] = lst_vertices[i]
 
@@ -52,10 +54,7 @@ def run(rank, size,data_path):
 
     # dataloader for test
     #test_dataloader = TestDataLoader("./benchmarks/FB15K237/", "link")
-    common_V = [2,11,13]
-    idx_common_v = [dict_e2id[e] for e in common_V]
-    tsr_idx_common_v = torch.LongTensor(idx_common_v)
-    tsr_common_V = torch.LongTensor(common_V)
+ 
     #send_id = torch.LongTensor(range(len(tensor_vertices)))
  
     # define the model
@@ -83,9 +82,6 @@ def run(rank, size,data_path):
     for epoch in training_range:
         res = 0.0
         print('epoch begin')
-
-        print(model.ent_embeddings(tsr_idx_common_v))
-
         
         for data in train_dataloader:
             loss = trainer.train_one_step(data)
@@ -100,32 +96,42 @@ def run(rank, size,data_path):
         #self.ent_embeddings = nn.Embedding(self.ent_tot, self.dim)
         #self.rel_embeddings
     
-        ent_embs_send = model.ent_embeddings(tsr_idx_common_v)
-        print('local state of ent_embs_send after train_step')
-        print(ent_embs_send)
+   
         
         sender_rank = epoch%size
         if(rank == sender_rank):
+  
             print('sender',rank)
-            for r in range(size):
-                if(r!=sender_rank):
-                    # Send the tensor to process 1
-                    print('sending to',r)
-                    z = torch.zeros(1)
-                    z[0] = len(common_V)
-                    dist.send(tensor=z,dst=r)
-                    dist.send(tensor=ent_embs_send, dst=r)
-                    dist.send(tensor=tsr_common_V,dst=r)
-                    #send relations embedding
-                    print('sent')
-                    print(ent_embs_send)
+            receivers = [r for r in range(size) if r!=sender_rank]
+            for r in receivers:
+                # find common vertices or fraction of common vertices to send to r
+                
+               
+                print('sending to',r)
+                z = torch.zeros(1)
+                common_V = dict_vertex_alloc[r]  # TODO: send fraction, randomly or by degree? 
+                tsr_common_V = torch.LongTensor(common_V)
+                tsr_idx_common_v = torch.LongTensor([ dict_e2id[e] for e in common_V])
+                
+                z[0] = len(common_V)
+                dist.send(tensor=z,dst=r)
+                
+                ent_embs_send = model.ent_embeddings(tsr_idx_common_v)
+                print('sending ',str(z[0]), 'tensors')
+                dist.send(tensor=ent_embs_send, dst=r)
+                
+              
+                dist.send(tensor=tsr_common_V,dst=r)
+                #send relations embedding
+                print('sent')
+                print(ent_embs_send)
             #ent_embs_recv 
         else:
             print('reciever',rank)
             n = torch.zeros(1)
             Ew = model.ent_embeddings.weight
             Rw = model.rel_embeddings.weight
-            receivers = [r for r in range(size) if r!=sender_rank]
+            #TODO: handle relation embedding sharing
             
             #for r in receivers:
             rcvd = False
@@ -142,26 +148,27 @@ def run(rank, size,data_path):
             #print(ent_embs_recv[0])
             ents_ids_to_update = torch.LongTensor(int(n[0]))
             dist.recv(tensor=ents_ids_to_update, src=sender_rank)
-            rcvd = True
+            
             #print(ents_ids_to_update)
             #print(dict_e2id)
             #print('ents ',ents_ids_to_update)
             #print('ijk ',dict_e2id[int(ents_ids_to_update[0])])
-            if rcvd:
-                j = 0
-                for e in ents_ids_to_update:
-                    if( int(e) in dict_e2id):
 
-                        idx = dict_e2id[int(e)]
-                        #print(idx,e)
-                        Ew.data[idx]+= ent_embs_recv[j]
-                        multiplier[idx]+=1
-                    j+=1
+            j = 0
+            for e in ents_ids_to_update:
+                if( int(e) in dict_e2id):
+
+                    idx = dict_e2id[int(e)]
+                    #print(idx,e)
+                    Ew.data[idx]+= ent_embs_recv[j]
+                    multiplier[idx]+=1
+                j+=1
 
             # recieved from all, now reduce
             print(multiplier[:15])
             for i in range(len(Ew)):
-                Ew.data[i] = Ew.data[i]*(1.0/multiplier[i])
+                if(multiplier[i]>1):
+                    Ew.data[i] = Ew.data[i]*(1.0/multiplier[i])
 
 
     # test the model

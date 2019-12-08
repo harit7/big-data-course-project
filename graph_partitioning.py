@@ -21,18 +21,5 @@ for i in range(num_parts):
     part_dir = data_dir+'/gvc_part_'+str(i)+'_'+str(num_parts)
     clean_mkdir(part_dir)
     write_as_triples(lst_parts[i].edges,part_dir)
-    f = open(part_dir+'/vertex_overlap.txt','w')
-    part = lst_parts[i]
-    for v in part.vertices:
-        s = ""
-        for j in range(num_parts):
-            if(i!=j):
-                if( v in lst_parts[j].vertices):
-                    s += str(j) + "\t"
-        if(len(s)>0):
-            s = str(v)+'\t' + s
-            f.write(s.rstrip('\t')+'\n')
-    f.flush()
-    f.close()
-
+    write_vertex_alloc_for_parts(i,lst_parts,part_dir)
     #write_edge_list(lst_parts[i].edges,'gvc_part_'+str(i)+"_"+str(num_parts)+"_"+fname)
