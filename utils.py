@@ -63,6 +63,20 @@ def write_as_triples(edges,d):
     f4.flush()
     f4.close()
     
+def read_e2id(data_path):
+    lst_vertices = []
+    dict_e2id  = {}
+    e2id_f = open(data_path+'/entity2id.txt')
+    e2id_f.readline()
+    for l in e2id_f:
+        s = l.rstrip('\n').split('\t')
+        e = int(s[0])
+        _id = int(s[1])
+        dict_e2id[e] = _id
+        lst_vertices.append(e)
+    e2id_f.close()
+    return dict_e2id, lst_vertices
+
 def clean_mkdir(d):
     if os.path.exists(d):
         print('directory exists, removing it')
