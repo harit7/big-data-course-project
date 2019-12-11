@@ -18,18 +18,35 @@ def sbm(num_nodes, num_parts, intra_block_prob, inter_block_prob):
     return g
     #dgs = [d for k,d in g.degree()]
 
-def power_law():
-    pass
+def power_law(num_nodes, num_rand_edge, triangle_prob):
+    g = nx.powerlaw_cluster_graph(num_nodes, num_rand_edge, triangle_prob, seed=None)
+    return g
 
-p1 = 0.01
-p2 = 0.001
-N  = 1000
-parts = 3
-g  = sbm(N,3,p1,p2)
-key = 'sbm_'+'n_'+str(N)+'_parts_'+str(parts)+'_p1_'+str(p1) +'_p2_'+str(p2)+'_num_edges_'+str(g.size())
-print(key)
-clean_mkdir(key)
+if __name__ == "__main__":
+    
+    is_sbm_graph = False
 
-write_as_triples(g.edges(),key)
+    if is_sbm_graph:
+        # Generate sbm graph -> community structure
+        p1 = 0.01
+        p2 = 0.001
+        N  = 1000
+        parts = 3
+        g  = sbm(N, 3, p1, p2)
+        key = 'sbm_'+'n_'+str(N)+'_parts_'+str(parts)+'_p1_'+str(p1) +'_p2_'+str(p2)+'_num_edges_'+str(g.size())
+        print(key)
+        clean_mkdir(key)
+        write_as_triples(g.edges(), key)
+    else:
+        # Generate powerlaw graph -> skewed graph structure
+        num_nodes = 100
+        num_rand_edge = 3
+        triangle_prob = 0.1
+        parts = 3
+        g = power_law(num_nodes, num_rand_edge, triangle_prob)
+        key = 'power_law_' + 'n_' + str(num_nodes) + '_parts_'+str(parts) + '_num_edge_' + str(g.size())
+        print(key)
+        clean_mkdir(key)
+        write_as_triples(g.edges(), key)
 
 #nx.write_edgelist(g,key+'full.edgelist',data=False)
