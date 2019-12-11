@@ -24,7 +24,7 @@ import utils
 
 def init_process(rank, size, data_path, fn, backend='gloo'):
     """ Initialize the distributed environment. """
-    os.environ['MASTER_ADDR'] = '127.0.0.1'
+    os.environ['MASTER_ADDR'] = '172.17.180.1'
     os.environ['MASTER_PORT'] = '29500'
     dist.init_process_group(backend, rank=rank, world_size=size)
     fn(rank, size, data_path)
@@ -76,7 +76,7 @@ def run(rank, size, data_path):
                         data_loader = train_dataloader,
                         train_times = 10, alpha = 1.0, 
                         use_gpu = False)
-    trainer.init()
+    #trainer.init()
     training_range = tqdm(range(trainer.train_times))
     
     for epoch in training_range:

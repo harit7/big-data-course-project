@@ -30,6 +30,7 @@ class Trainer(object):
 
 		self.opt_method = opt_method
 		self.optimizer = None
+
 		self.lr_decay = 0
 		self.weight_decay = 0
 		self.alpha = alpha
@@ -39,7 +40,12 @@ class Trainer(object):
 		self.use_gpu = use_gpu
 		self.save_steps = save_steps
 		self.checkpoint_dir = checkpoint_dir
-
+		self.optimizer = optim.SGD(
+                                self.model.parameters(),
+                                lr = self.alpha,
+                                weight_decay=self.weight_decay,
+                        )
+		
 	def train_one_step(self, data):
 		self.optimizer.zero_grad()
 		loss = self.model({
