@@ -27,15 +27,13 @@ def init_process(rank, size, data_path, fn, backend='gloo'):
     os.environ['MASTER_ADDR'] = '127.0.0.1'
     os.environ['MASTER_PORT'] = '29500'
     dist.init_process_group(backend, rank=rank, world_size=size)
-    fn(rank,size,data_path)
+    fn(rank, size, data_path)
 
-def run(rank, size,data_path):
+def run(rank, size, data_path):
     torch.manual_seed(1234)
     #maintain data of nodes and their allocation
-    dict_e2id,lst_vertices = utils.read_e2id(data_path)
-    
+    dict_e2id, lst_vertices = utils.read_e2id(data_path)
     tsr_V = torch.zeros(len(lst_vertices))
-    
     dict_vertex_alloc = utils.read_vertex_alloc_for_parts(data_path)
     
     for i in range(len(lst_vertices)):
@@ -74,9 +72,11 @@ def run(rank, size,data_path):
     )
     model = transe
     # train the model
-    trainer = Trainer(model = neg_sampling, data_loader = train_dataloader, train_times = 10, alpha = 1.0, use_gpu = False)
+    trainer = Trainer(model = neg_sampling, 
+                        data_loader = train_dataloader,
+                        train_times = 10, alpha = 1.0, 
+                        use_gpu = False)
     trainer.init()
-    
     training_range = tqdm(range(trainer.train_times))
     
     for epoch in training_range:
@@ -98,36 +98,32 @@ def run(rank, size,data_path):
     
    
         
-        sender_rank = epoch%size
+        sender_rank = epoch % size
         if(rank == sender_rank):
   
-            print('sender',rank)
-            receivers = [r for r in range(size) if r!=sender_rank]
+            print('sender', rank)
+            receivers = [r for r in range(size) if r != sender_rank]
             for r in receivers:
                 # find common vertices or fraction of common vertices to send to r
-                
-               
-                print('sending to',r)
+                print('sending to', r)
                 z = torch.zeros(1)
                 common_V = dict_vertex_alloc[r]  # TODO: send fraction, randomly or by degree? 
                 tsr_common_V = torch.LongTensor(common_V)
                 tsr_idx_common_v = torch.LongTensor([ dict_e2id[e] for e in common_V])
                 
                 z[0] = len(common_V)
-                dist.send(tensor=z,dst=r)
+                dist.send(tensor=z, dst=r)
                 
                 ent_embs_send = model.ent_embeddings(tsr_idx_common_v)
-                print('sending ',str(z[0]), 'tensors')
+                print('sending ', str(z[0]), 'tensors')
                 dist.send(tensor=ent_embs_send, dst=r)
-                
-              
-                dist.send(tensor=tsr_common_V,dst=r)
+                dist.send(tensor=tsr_common_V, dst=r)
                 #send relations embedding
                 print('sent')
                 print(ent_embs_send)
             #ent_embs_recv 
         else:
-            print('reciever',rank)
+            print('reciever', rank)
             n = torch.zeros(1)
             Ew = model.ent_embeddings.weight
             Rw = model.rel_embeddings.weight
@@ -140,9 +136,9 @@ def run(rank, size,data_path):
             multiplier = torch.ones(len(Ew))
 
             # Send the tensor to process 1
-            print('Receiving from ',sender_rank)
-            dist.recv(tensor = n,src = sender_rank)
-            print('will recv',n,' embeddings')
+            print('Receiving from ', sender_rank)
+            dist.recv(tensor = n, src = sender_rank)
+            print('will recv', n, ' embeddings')
             ent_embs_recv = torch.zeros(int(n[0]),transe.dim)
             dist.recv(tensor=ent_embs_recv, src=sender_rank)
             #print(ent_embs_recv[0])
