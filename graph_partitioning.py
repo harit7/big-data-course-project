@@ -21,5 +21,5 @@ for i in range(num_parts):
     part_dir = data_dir+'/gvc_part_'+str(i)+'_'+str(num_parts)
     clean_mkdir(part_dir)
     write_as_triples(lst_parts[i].edges,part_dir)
-
+    write_vertex_alloc_for_parts(i,lst_parts,part_dir)
     #write_edge_list(lst_parts[i].edges,'gvc_part_'+str(i)+"_"+str(num_parts)+"_"+fname)
