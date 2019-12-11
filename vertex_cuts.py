@@ -2,18 +2,19 @@ from utils import *
 from GraphPartition import *
 from collections import defaultdict
 import numpy as np
+
 # random, vertex-cut
 def random_vertex_cut(edges, num_parts):
     pmt = np.random.permutation(len(edges))
-    ps = int(len(edges)/num_parts)
+    ps = int(len(edges) / num_parts)
     lst_parts = []
     for i in range(num_parts):
-        pe = [ edges[j] for j in pmt[i*ps:(i+1)*ps]]
+        pe = [ edges[j] for j in pmt[i * ps : (i + 1) * ps]]
         lst_parts.append(GraphPartition(pe))
     return lst_parts
 
 
-def greedy_vertex_cut(edges,num_parts):
+def greedy_vertex_cut(edges, num_parts):
     pmt = np.random.permutation(len(edges))
     #print(len(pmt))
     lst_parts = [GraphPartition() for i in range(num_parts)]

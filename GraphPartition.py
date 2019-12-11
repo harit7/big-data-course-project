@@ -1,5 +1,5 @@
 class GraphPartition:
-    def __init__(self,edges=None):
+    def __init__(self, edges=None):
         self.vertices = set()
         if(edges is None):
             self.num_edges = 0
@@ -21,12 +21,12 @@ class GraphPartition:
     def get_vertex_set(self):
         return self.vertices
     
-    def add_edge(self,e):
+    def add_edge(self, e):
         self.edges.append(e)
         self.vertices.add(e[0])
         self.vertices.add(e[1])
         self.num_vertices = len(self.vertices)
         self.num_edges+=1
     
-    def num_common_vertices(self,p2):
+    def num_common_vertices(self, p2):
         return len(self.vertices.intersection(p2.vertices))
