@@ -21,12 +21,24 @@ class GraphPartition:
     def get_vertex_set(self):
         return self.vertices
     
+    def get_edges(self):
+        return self.edges
+
     def add_edge(self, e):
         self.edges.append(e)
         self.vertices.add(e[0])
         self.vertices.add(e[1])
         self.num_vertices = len(self.vertices)
-        self.num_edges+=1
+        self.num_edges += 1
     
     def num_common_vertices(self, p2):
         return len(self.vertices.intersection(p2.vertices))
+
+
+    def __str__(self):
+        result = "Graph Partition Information\n"
+        result = result + "Number of vertices: " + str(self.num_vertices) + "\n"
+        result = result + "Number of edges: " + str(self.num_edges) + "\n"
+        result = result + "Vertices list: " + str(self.vertices) + "\n"
+        result = result + "Edges list: " + str(self.edges) + "\n"
+        return result
