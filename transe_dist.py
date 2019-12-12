@@ -178,7 +178,7 @@ if __name__ == "__main__":
     #print(size,rank)
     data_dir = './sbm_n_1000_parts_3_p1_0.01_p2_0.001_num_edges_3689/' 
     #data_dir += 'gvc_part_'+str(rank)+'_3/'
-    data_dir += 'gvc_part_' + str(rank) + '_' + size + '/'
+    data_dir += 'gvc_part_' + str(rank) + '_' + str(size) + '/'
     print(data_dir)
     #run(rank,size,data_dir)
     #edge_file_path = 'gvc_part_'+str(rank)+'_3_sbm_n_1000_parts_3_p1_0.01_p2_0.001_num_edges_3689_.edgelist'
