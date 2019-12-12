@@ -11,7 +11,7 @@ def random_edge_cut(edges, num_parts):
     vertex_edges = defaultdict(list)
     for edge in edges:
         vertex_edges[edge[0]].append(tuple(edge))
-        vertex_edges[edge[1]].append((edge[1], edge[0]))
+        vertex_edges[edge[1]].append(tuple(edge))
     
     partition_set = defaultdict(set)
     for k, v in vertex_edges.items():
