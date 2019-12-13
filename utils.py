@@ -1,6 +1,7 @@
 import random
 import shutil
 import os
+import sys
 from collections import defaultdict
 
 def read_edge_list(data_dir):
@@ -119,3 +120,19 @@ def get_random_from_set(s):
     else:
         i = random.randint(0,len(s)-1)
     return list(s)[i]
+
+def get_min_loaded_from_set(s, lst_parts):
+    i = random.randint(0, len(lst_parts) - 1)
+    if (len(s) == 0):
+        min_loaded = sys.maxsize
+        for part in range(len(lst_parts)):
+            if len(lst_parts[part].get_edges()) < min_loaded:
+                i = part
+                min_loaded = len(lst_parts[part].get_edges())
+    else:
+        min_loaded = sys.maxsize
+        for set_part in list(s):
+            if len(lst_parts[set_part].get_edges()) < min_loaded:
+                i = set_part
+                min_loaded = len(lst_parts[set_part].get_edges())
+    return i  
