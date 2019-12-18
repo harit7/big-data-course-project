@@ -33,14 +33,14 @@ def run(rank, size,data_path):
         neg_rel = 0)
 
     # dataloader for test
-    #test_dataloader = TestDataLoader("./benchmarks/FB15K237/", "link")
+    test_dataloader = TestDataLoader(data_path, "link")
 
     # define the model
     transe = TransE(
         ent_tot = train_dataloader.get_ent_tot(),
         rel_tot = train_dataloader.get_rel_tot(),
-        dim = 10, 
-        p_norm = 1, 
+        dim = 25, 
+        p_norm = 2, 
         norm_flag = True)
 
 
@@ -52,21 +52,32 @@ def run(rank, size,data_path):
     )
 
     # train the model
-    trainer = Trainer(model = model, data_loader = train_dataloader, train_times = 10, alpha = 1.0, use_gpu = False)
+    trainer = Trainer(model = model, data_loader = train_dataloader, train_times = 90, alpha = 1.0, use_gpu = False)
     trainer.run()
-    #transe.save_checkpoint('./checkpoint/transe.ckpt')
+    transe.save_checkpoint('./checkpoint/transe.ckpt')
 
     # test the model
-    #transe.load_checkpoint('./checkpoint/transe.ckpt')
-    #tester = Tester(model = transe, data_loader = test_dataloader, use_gpu = True)
-    #tester.run_link_prediction(type_constrain = False)
+    transe.load_checkpoint('./checkpoint/transe.ckpt')
+    tester = Tester(model = transe, data_loader = test_dataloader, use_gpu = False)
+    tester.run_link_prediction(type_constrain = False)
+    print('random model')
+    transe_rand = TransE(
+        ent_tot = train_dataloader.get_ent_tot(),#train_dataloader.get_ent_tot(),
+        rel_tot = 1,# train_dataloader.get_rel_tot(),
+        dim = 25, 
+        p_norm = 2, 
+        norm_flag = True)    
+       # test the model
+ 
+    tester = Tester(model = transe_rand, data_loader = test_dataloader, use_gpu = False)
+    tester.run_link_prediction(type_constrain = False)
 
 if __name__ == "__main__":
     #size = int(sys.argv[1])
-    rank = int(sys.argv[1])
+    #rank = int(sys.argv[1])
     #print(size,rank)
     data_dir = './sbm_n_1000_parts_3_p1_0.01_p2_0.001_num_edges_3689/' 
-    data_dir += 'gvc_part_'+str(rank)+'_3/'
+    #data_dir += 'gvc_part_'+str(rank)+'_3/'
     print(data_dir)
     run(0,1,data_dir)
     #edge_file_path = 'gvc_part_'+str(rank)+'_3_sbm_n_1000_parts_3_p1_0.01_p2_0.001_num_edges_3689_.edgelist'

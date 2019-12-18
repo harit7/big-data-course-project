@@ -24,9 +24,9 @@ def power_law(num_nodes, num_rand_edge, triangle_prob):
 
 if __name__ == "__main__":
     
-    is_sbm_graph = False
+    graph_model = 'sbm'
 
-    if is_sbm_graph:
+    if graph_model == 'sbm':
         # Generate sbm graph -> community structure
         p1 = 0.01
         p2 = 0.001
@@ -36,8 +36,9 @@ if __name__ == "__main__":
         key = 'sbm_'+'n_'+str(N)+'_parts_'+str(parts)+'_p1_'+str(p1) +'_p2_'+str(p2)+'_num_edges_'+str(g.size())
         print(key)
         clean_mkdir(key)
-        write_as_triples(g.edges(), key)
-    else:
+        write_as_triples(g.edges(), key,test_val_pct=0.2)
+        
+    elif graph_model == 'power_law':
         # Generate powerlaw graph -> skewed graph structure
         num_nodes = 100
         num_rand_edge = 3

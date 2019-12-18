@@ -3,6 +3,7 @@ import shutil
 import os
 import sys
 from collections import defaultdict
+from sklearn.model_selection import train_test_split
 
 def read_edge_list(data_dir):
     edges = []
@@ -30,7 +31,7 @@ def read_e2id(data_dir):
         e2id[int(l[0])] = int(l[1])
     f.close()
 
-def write_as_triples(edges,d):
+def write_as_triples(edges,d,test_val_pct=0):
     ents = set()
     r = 0
     for e in edges:
@@ -46,24 +47,44 @@ def write_as_triples(edges,d):
     f1.close()
     
     f2 = open(d+'/orig_triples.txt','w')
-    f3 = open(d+'/train2id.txt','w')
-    ents = set()
-    r = 0
     f2.write(str(len(edges))+"\n")    
-    f3.write(str(len(edges))+"\n")
     for e in edges:
         f2.write(str(e[0]) +'\t'+str(e[1])+"\t"+str(r) +"\n")
-        f3.write( str(d_ents[e[0]]) +'\t'+str(d_ents[e[1]])+ '\t'+'0'+'\n')
     f2.flush()
-    f3.flush()
     f2.close()
+    train_edges = edges
+    if(test_val_pct>0):
+        train_edges,test_val_edges = train_test_split(list(edges),test_size=test_val_pct)
+        test_edges, val_edges      = train_test_split(list(test_val_edges),test_size=0.5)
+        print(len(train_edges), len(val_edges),len(test_edges))
+        
+    f3 = open(d+'/train2id.txt','w')
+    f3.write(str(len(train_edges))+"\n")
+    for e in train_edges:
+        f3.write( str(d_ents[e[0]]) +'\t'+str(d_ents[e[1]])+ '\t'+'0'+'\n')
+    f3.flush()
     f3.close()
     
-    f4 = open(d+'/relation2id.txt','w')
-    f4.write('1\n')
-    f4.write(str(r)+'\t'+'0')
-    f4.flush()
-    f4.close()
+    if(test_val_pct>0):
+        f4 = open(d+'/test2id.txt','w')
+        f4.write(str(len(test_edges))+"\n")    
+        for e in test_edges:
+            f4.write( str(d_ents[e[0]]) +'\t'+str(d_ents[e[1]])+ '\t'+'0'+'\n')
+        f4.flush()
+        f4.close()
+        
+        f4 = open(d+'/valid2id.txt','w')
+        f4.write(str(len(val_edges))+"\n")    
+        for e in val_edges:
+            f4.write( str(d_ents[e[0]]) +'\t'+str(d_ents[e[1]])+ '\t'+'0'+'\n')
+        f4.flush()
+        f4.close()
+
+    f5 = open(d+'/relation2id.txt','w')
+    f5.write('1\n')
+    f5.write(str(r)+'\t'+'0')
+    f5.flush()
+    f5.close()
     
 def read_e2id(data_path):
     lst_vertices = []
